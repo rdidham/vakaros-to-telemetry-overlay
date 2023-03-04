@@ -55,6 +55,8 @@ def run(vakaros_file_path):
     header_dict, data = _read_vakaros_csv(vakaros_file_path)
     _map_telemetry_overlay_headers(header_dict)
     _convert_timestamp(header_dict, data)
+    output_directory, vakaros_file_name = _get_output_directory(vakaros_file_path)
+    _write_converted_file(output_directory, vakaros_file_name, header_dict, data)
 
 def _read_vakaros_csv(vakaros_csv_path:str) -> tuple:
     '''
@@ -98,19 +100,31 @@ def _convert_timestamp(header_dict:dict, data:list) -> None:
         time = row[timestamp_index]
         datetime_obj = datetime.strptime(time, "%Y-%m-%dT%H:%M:%S.%f")
         utc_datetime_obj = datetime_obj.astimezone(timezone.utc)
-        time = utc_datetime_obj.strftime("%Y-%m-%dT%H:%M:%S.%f")[:-3] + 'Z'
+        row[timestamp_index] = utc_datetime_obj.strftime("%Y-%m-%dT%H:%M:%S.%f")[:-3] + 'Z'
+
+def _get_output_directory(vakaros_file_path):
+    head_tail = os.path.split(vakaros_file_path)
+    return head_tail
         
+def _write_converted_file(output_directory, vakaros_file_name, header_dict, data):
+    output_name = 'vk2to_' + vakaros_file_name
+    output_path = os.path.join(output_directory, output_name)
+    
+    header = [item['telemetry_overlay_label'] for item in header_dict.values()]
+        
+    # writing to csv file 
+    with open(output_path, 'w', newline='') as csvfile: 
+        # creating a csv writer object 
+        csvwriter = csv.writer(csvfile, delimiter=',', quotechar='"', quoting=csv.QUOTE_MINIMAL) 
+            
+        # write header 
+        csvwriter.writerow(header) 
+            
+        # writing the data rows 
+        csvwriter.writerows(data)        
 
 if __name__ == '__main__':
     GUI()
-    # arguments = sys.argv
-    # print(arguments)
-    # if len(arguments) != 2:
-    #     print("Error, zero or multiple input arguments given")
-    #     sys.exit()
-    
-    # header_dict, data = _read_vakaros_csv(arguments[1])
-    # _map_telemetry_overlay_headers(header_dict)
     
     
     
