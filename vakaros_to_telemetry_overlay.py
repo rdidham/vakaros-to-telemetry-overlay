@@ -1,9 +1,8 @@
-import sys, os
+import os
 import csv
 from datetime import datetime, timezone
 
 import tkinter as tk
-from tkinter import filedialog
 
 
 class GUI:
