@@ -4,6 +4,7 @@ from datetime import datetime, timezone
 
 import tkinter as tk
 from tkinter import filedialog
+from tkinter import messagebox
 
 
 class GUI:
@@ -14,9 +15,15 @@ class GUI:
         self.window.title("Vakaros To Telemetry Overlay")
         self.run_flag = tk.BooleanVar(value=False)
 
+        menuBar = tk.Menu(self.window)
+        self.window.config(menu=menuBar)
+        menuBar.add_command(label='About', command=self.about)
+
         #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
         #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
         self.frame = tk.Frame(master=self.window, padx=5, pady=0)
+        self.line_frame = tk.Label(master=self.frame,
+                                   text='Vakaros ')
         self.btn_load_vakaros_csv = tk.Button(master=self.frame,
                                      text='Load Vakaros CSV file',
                                      command=self.run)
@@ -30,13 +37,25 @@ class GUI:
         self.frame.pack()
         
         self.window.mainloop()
+    
+    def about(self):
+        app_version = _get_app_version()
+        messagebox.showinfo(
+            'About', 
+            'Python application from Richard Didham to convert Vakaros export csv to'
+            f'Telemetry Overlay import csv.\n Version: {app_version}'
+        )
             
     def run(self):
         title_str = 'Select Vakaros CSV File'
         file_types = (('csv files','.csv'),)
         vakaros_file_path = tk.filedialog.askopenfilename(title= title_str,
                                                             filetypes=file_types)
-        run(vakaros_file_path)
+        output_path = run(vakaros_file_path)
+        messagebox.showinfo(
+            'Success', 
+            f'csv file output to:\n {output_path}'
+        )
 
 LABEL_MAP = {
     'timestamp': 'date',
@@ -56,7 +75,8 @@ def run(vakaros_file_path):
     _map_telemetry_overlay_headers(header_dict)
     _convert_timestamp(header_dict, data)
     output_directory, vakaros_file_name = _get_output_directory(vakaros_file_path)
-    _write_converted_file(output_directory, vakaros_file_name, header_dict, data)
+    output_file_name = _write_converted_file(output_directory, vakaros_file_name, header_dict, data)
+    return os.path.join(output_directory, output_file_name)
 
 def _read_vakaros_csv(vakaros_csv_path:str) -> tuple:
     '''
@@ -121,7 +141,15 @@ def _write_converted_file(output_directory, vakaros_file_name, header_dict, data
         csvwriter.writerow(header) 
             
         # writing the data rows 
-        csvwriter.writerows(data)        
+        csvwriter.writerows(data) 
+
+    return output_name 
+
+def _get_app_version():  
+    with open('Changelog.md') as f:
+        line = f.readline()
+        number = line[10:]
+    return number
 
 if __name__ == '__main__':
     GUI()
