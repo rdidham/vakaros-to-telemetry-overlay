@@ -1,3 +1,10 @@
+# Release 1.0.2
+## Features
+## Changes
+1) documentation cleanup
+## Bug Fixes
+1) Version number error if changelog.md was in different directory from script
+
 # Release 1.0.1
 ## Features
 1) Added pyinstaller to requirements. Intend to build app to excecutables and store in github

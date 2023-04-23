@@ -8,5 +8,7 @@ Python Script to convert Vakaros output csv to Telemetry Overlay csv
 3. Download excecutable file
 4. Double click excecutable file to run app
 
+## Building Executable 
 
+This project can be built into an excecutable by running `pyinstaller vakaros_to_telemetry_overlay.py -w --onefile`
 

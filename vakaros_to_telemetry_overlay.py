@@ -6,6 +6,20 @@ import tkinter as tk
 from tkinter import filedialog
 from tkinter import messagebox
 
+VERSION = '1.0.2' # warning, do not change this line. It's updated automatically when app is built
+
+LABEL_MAP = {
+    'timestamp': 'date',
+    'latitude': 'lat (deg)',
+    'longitude': 'lon (deg)',
+    'sog_kts': 'speed (kn)',
+    'sog_mps': 'speed (m/s)', # idk why you'd use something other than kts but writing out label maps anyway
+    'sog_mph': 'speed (m/h)',
+    'sog_kph': 'speed (k/h)',
+    'roll': 'bank (deg)',
+    'pitch': 'pitch angle (deg)',
+    'cog': 'heading (deg)'
+}
 
 class GUI:
     def __init__(self):
@@ -39,11 +53,10 @@ class GUI:
         self.window.mainloop()
     
     def about(self):
-        app_version = _get_app_version()
         messagebox.showinfo(
             'About', 
             'Python application from Richard Didham to convert Vakaros export csv to'
-            f'Telemetry Overlay import csv.\n Version: {app_version}'
+            f'Telemetry Overlay import csv.\n Version: {VERSION}'
         )
             
     def run(self):
@@ -57,28 +70,15 @@ class GUI:
             f'csv file output to:\n {output_path}'
         )
 
-LABEL_MAP = {
-    'timestamp': 'date',
-    'latitude': 'lat (deg)',
-    'longitude': 'lon (deg)',
-    'sog_kts': 'speed (kn)',
-    'sog_mps': 'speed (m/s)', # idk why you'd use something other than kts but writing out label maps anyway
-    'sog_mph': 'speed (m/h)',
-    'sog_kph': 'speed (k/h)',
-    'roll': 'bank (deg)',
-    'pitch': 'pitch angle (deg)',
-    'cog': 'heading (deg)'
-}
-
 def run(vakaros_file_path):
-    header_dict, data = _read_vakaros_csv(vakaros_file_path)
-    _map_telemetry_overlay_headers(header_dict)
-    _convert_timestamp(header_dict, data)
-    output_directory, vakaros_file_name = _get_output_directory(vakaros_file_path)
-    output_file_name = _write_converted_file(output_directory, vakaros_file_name, header_dict, data)
+    header_dict, data = read_vakaros_csv(vakaros_file_path)
+    map_telemetry_overlay_headers(header_dict)
+    convert_timestamp(header_dict, data)
+    output_directory, vakaros_file_name = get_output_directory(vakaros_file_path)
+    output_file_name = write_converted_file(output_directory, vakaros_file_name, header_dict, data)
     return os.path.join(output_directory, output_file_name)
 
-def _read_vakaros_csv(vakaros_csv_path:str) -> tuple:
+def read_vakaros_csv(vakaros_csv_path:str) -> tuple:
     '''
     Reads the csv file which is output from vakaros and stores data
     
@@ -101,11 +101,11 @@ def _read_vakaros_csv(vakaros_csv_path:str) -> tuple:
             
         return (header_dict, data)
 
-def _map_telemetry_overlay_headers(header_dict:dict) -> None:
+def map_telemetry_overlay_headers(header_dict:dict) -> None:
     '''
     associate telemety overlay headers with header_dict
     Args:
-    header_dict: dictionary returned from _read_vakaros_csv
+        header_dict: dictionary returned from _read_vakaros_csv
     '''
     for key, sub_dict in header_dict.items():
         if key in LABEL_MAP:
@@ -114,7 +114,13 @@ def _map_telemetry_overlay_headers(header_dict:dict) -> None:
             telemetry_overlay_label = key
         sub_dict['telemetry_overlay_label'] = telemetry_overlay_label
 
-def _convert_timestamp(header_dict:dict, data:list) -> None:
+def convert_timestamp(header_dict:dict, data:list) -> None:
+    """Converts time column of data from local time to Zulu Time
+    
+    Args:
+        header_dict: dictionary returned from _read_vakaros_csv
+        data: rows of data returned from _read_vakaros_csv
+    """
     timestamp_index = header_dict['timestamp']['column']
     for row in data:
         time = row[timestamp_index]
@@ -122,11 +128,21 @@ def _convert_timestamp(header_dict:dict, data:list) -> None:
         utc_datetime_obj = datetime_obj.astimezone(timezone.utc)
         row[timestamp_index] = utc_datetime_obj.strftime("%Y-%m-%dT%H:%M:%S.%f")[:-3] + 'Z'
 
-def _get_output_directory(vakaros_file_path):
+def get_output_directory(vakaros_file_path):
     head_tail = os.path.split(vakaros_file_path)
     return head_tail
         
-def _write_converted_file(output_directory, vakaros_file_name, header_dict, data):
+def write_converted_file(
+        output_directory:str, vakaros_file_name:str, header_dict:dict, data:list
+    ) -> str:
+    """Writes Converted data to new csv file.
+    
+    Args:
+        output_directory: directory to write new file to
+        vakaros_file_name: nave of the vakaros csv file that was loaded
+        header_dict: dictionary returned from _read_vakaros_csv
+        data: rows of data returned from _read_vakaros_csv
+    """
     output_name = 'vk2to_' + vakaros_file_name
     output_path = os.path.join(output_directory, output_name)
     
@@ -145,7 +161,7 @@ def _write_converted_file(output_directory, vakaros_file_name, header_dict, data
 
     return output_name 
 
-def _get_app_version():  
+def get_app_version():  
     with open('Changelog.md') as f:
         line = f.readline()
         number = line[10:]
@@ -153,6 +169,4 @@ def _get_app_version():
 
 if __name__ == '__main__':
     GUI()
-    
-    
-    
+     
