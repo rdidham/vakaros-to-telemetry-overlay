@@ -1,3 +1,10 @@
+# Release 1.0.3
+## Features
+## Changes
+## Bug Fixes
+1) Fix blank rows in exported csv file
+2) Add "units" to custom fields not defined in map
+
 # Release 1.0.2
 ## Features
 ## Changes

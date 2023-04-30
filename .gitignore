@@ -1,3 +1,4 @@
 *.vscode
 venv
 build
+debug_files

@@ -6,7 +6,7 @@ import tkinter as tk
 from tkinter import filedialog
 from tkinter import messagebox
 
-VERSION = '1.0.2' # warning, do not change this line. It's updated automatically when app is built
+VERSION = '1.0.3' # warning, do not change this line. It's updated automatically when app is built
 
 LABEL_MAP = {
     'timestamp': 'date',
@@ -18,7 +18,7 @@ LABEL_MAP = {
     'sog_kph': 'speed (k/h)',
     'roll': 'bank (deg)',
     'pitch': 'pitch angle (deg)',
-    'cog': 'heading (deg)'
+    'cog': 'heading (deg)',
 }
 
 class GUI:
@@ -97,6 +97,8 @@ def read_vakaros_csv(vakaros_csv_path:str) -> tuple:
         header_dict = {label: {'column': column} for column, label in enumerate(header)}
         data = []
         for row in vakaros_csv_reader:
+            if len(row) == 0:
+                continue
             data.append(row) 
             
         return (header_dict, data)
@@ -111,7 +113,7 @@ def map_telemetry_overlay_headers(header_dict:dict) -> None:
         if key in LABEL_MAP:
             telemetry_overlay_label = LABEL_MAP[key]
         else:
-            telemetry_overlay_label = key
+            telemetry_overlay_label = f"{key} (units)"
         sub_dict['telemetry_overlay_label'] = telemetry_overlay_label
 
 def convert_timestamp(header_dict:dict, data:list) -> None:
