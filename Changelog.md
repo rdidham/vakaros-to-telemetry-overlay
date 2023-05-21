@@ -1,3 +1,9 @@
+# Release 1.0.4
+## Features
+## Changes
+1) Skip first line of data since it initally moves backward in time
+## Bug Fixes
+
 # Release 1.0.3
 ## Features
 ## Changes

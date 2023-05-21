@@ -6,7 +6,7 @@ import tkinter as tk
 from tkinter import filedialog
 from tkinter import messagebox
 
-VERSION = '1.0.3' # warning, do not change this line. It's updated automatically when app is built
+VERSION = '1.0.4' 
 
 LABEL_MAP = {
     'timestamp': 'date',
@@ -96,6 +96,8 @@ def read_vakaros_csv(vakaros_csv_path:str) -> tuple:
         header = next(vakaros_csv_reader)
         header_dict = {label: {'column': column} for column, label in enumerate(header)}
         data = []
+        #remove first line of csv file since it initially moves backward in time
+        next(vakaros_csv_reader) 
         for row in vakaros_csv_reader:
             if len(row) == 0:
                 continue
